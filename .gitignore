@@ -53,4 +53,7 @@ Thumbs.db
 # Data pipeline
 pipeline/raw/
 pipeline/processed/
+pipeline/venv/
+pipeline/__pycache__/
+*.pyc
 

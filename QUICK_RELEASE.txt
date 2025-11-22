@@ -1,0 +1,21 @@
+QUICK RELEASE v1.0.0 - Copy/Paste These Commands
+
+1. Open PowerShell in project directory
+
+2. Run these commands one at a time:
+
+git reset pipeline/venv/
+git add .
+git reset pipeline/venv/
+git commit -m "chore(release): v1.0.0 — initial stable release"
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin master
+git push origin v1.0.0
+
+3. If remote doesn't exist, first create GitHub repo then:
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+git push -u origin master
+git push origin v1.0.0
+
+Done!
+
