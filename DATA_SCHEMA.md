@@ -1,12 +1,18 @@
 # Database Schema & Data Dictionary
 
-## Overview
-This document defines the complete SQLite database schema for Aplica. The database contains comprehensive data on 6,000+ US four-year institutions, sourced from College Scorecard API, IPEDS, and manually curated Common Data Set information.
+**⚠️ Architecture Note:** This application uses **live College Scorecard API calls** instead of a local SQLite database. The schema below documents the API response structure and how we normalize it for our application. This documentation serves as a reference for data structure, not an actual database schema.
 
-**Database File**: `colleges_vYYYY_MM.db` (versioned by year and month)  
-**Size**: ~20MB compressed  
-**Update Frequency**: Annual major updates, quarterly minor updates  
-**Primary Key**: `unitid` (IPEDS Unit ID) used across all tables
+**API Endpoint:** https://api.data.gov/ed/collegescorecard/v1/schools  
+**Documentation:** https://collegescorecard.ed.gov/data/documentation/
+
+---
+
+## Overview
+This document defines the data structure for Aplica. The app now uses live College Scorecard API calls to access comprehensive data on 6,000+ US four-year institutions. The schema below reflects the API response format and how we normalize it for use in the application.
+
+**Previous Architecture**: SQLite database (`colleges_vYYYY_MM.db`)  
+**Current Architecture**: Live API calls with localStorage caching (24-hour TTL)  
+**Primary Key**: `unitid` (IPEDS Unit ID) used across all data structures
 
 ## Data Sources
 

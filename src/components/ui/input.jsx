@@ -70,7 +70,7 @@ export function CurrencyInput({ value, onChange, ...props }) {
 }
 
 // Number input with step controls
-export function NumberInput({ value, onChange, min, max, step = 1, ...props }) {
+export function NumberInput({ value, onChange, min, max, step = 1, glassmorphic = false, ...props }) {
   const increment = () => {
     const newValue = (value || 0) + step;
     if (!max || newValue <= max) {
@@ -84,32 +84,37 @@ export function NumberInput({ value, onChange, min, max, step = 1, ...props }) {
       onChange(newValue);
     }
   };
+
+  const buttonClasses = glassmorphic
+    ? 'h-11 w-11 rounded-lg border border-white/20 bg-white/5 hover:bg-white/10 text-white disabled:opacity-40 disabled:cursor-not-allowed'
+    : 'h-11 w-11 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed';
   
   return (
     <div className="flex items-center gap-2">
       <button
         type="button"
         onClick={decrement}
-        className="h-11 w-11 rounded-lg border border-gray-300 hover:bg-gray-50"
-        disabled={min !== undefined && value <= min}
+        className={buttonClasses}
+        disabled={min !== undefined && (value || 0) <= min}
       >
         −
       </button>
       <Input
         type="number"
         value={value || ''}
-        onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+        onChange={(e) => onChange(parseFloat(e.target.value) || null)}
         min={min}
         max={max}
         step={step}
         className="text-center"
+        glassmorphic={glassmorphic}
         {...props}
       />
       <button
         type="button"
         onClick={increment}
-        className="h-11 w-11 rounded-lg border border-gray-300 hover:bg-gray-50"
-        disabled={max !== undefined && value >= max}
+        className={buttonClasses}
+        disabled={max !== undefined && (value || 0) >= max}
       >
         +
       </button>

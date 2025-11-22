@@ -16,6 +16,40 @@
   }
 }
 
+@layer base {
+  /* Select dropdown styling - matches glassmorphic input design */
+  select {
+    @apply text-white;
+    max-width: 100%;
+    font-size: 1rem; /* base font size */
+  }
+  
+  /* Dropdown list background - glassmorphic style matching glass-card appearance */
+  /* Visual approximation of rgba(255,255,255,0.08) on slate-800 = lighter slate with glass effect */
+  select option {
+    background-color: rgb(48, 58, 75) !important; /* lighter slate approximating glass-card glassmorphic effect */
+    color: white !important;
+    font-size: 0.875rem !important; /* text-sm - smaller font for dropdown options */
+    padding: 0.5rem 1rem !important; /* match select padding */
+  }
+  
+  /* Selected/hovered option - slightly lighter glassmorphic effect */
+  select option:checked,
+  select option:hover {
+    background-color: rgb(58, 68, 85) !important; /* lighter for selection, maintains glassmorphic feel */
+    color: white !important;
+  }
+  
+  select:focus {
+    outline: none;
+  }
+  
+  /* Hide default arrows */
+  select::-ms-expand {
+    display: none;
+  }
+}
+
 @layer utilities {
   /* Elegant Glassmorphism utilities - Transparent glass structures */
   .glass {
