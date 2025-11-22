@@ -3,6 +3,20 @@
 
 Data-driven college matching application to help students, parents, and counselors find best-fit schools based on comprehensive academic, financial, and personal fit criteria.
 
+## Setup
+
+1. Clone the repository
+
+2. Install dependencies: `npm install`
+
+3. Copy `.env.example` to `.env` and add your College Scorecard API key
+
+4. Run development server: `npm run dev`
+
+### Getting a College Scorecard API Key
+
+Register at: https://api.data.gov/signup/
+
 ## Getting Started
 
 ### Prerequisites
