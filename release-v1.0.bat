@@ -23,11 +23,18 @@ echo Step 5: Checking remote...
 git remote -v
 echo.
 
-echo === Release Committed and Tagged ===
+echo Step 6: Pushing to GitHub...
+git push -u origin master
 echo.
-echo Next steps (if remote exists):
-echo   git push origin master
-echo   git push origin v1.0.0
+
+echo Step 7: Pushing tag...
+git push origin v1.0.0
+echo.
+
+echo === Release Complete! ===
+echo.
+echo Repository: https://github.com/ozlphrt/aplica.git
+echo Tag: v1.0.0
 echo.
 pause
 
