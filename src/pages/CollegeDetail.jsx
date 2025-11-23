@@ -94,7 +94,7 @@ export default function CollegeDetail() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto px-0 sm:px-0.5 md:px-1 lg:px-2 xl:px-3 py-1 sm:py-2 md:py-3 lg:py-4 xl:py-6">
         <Card glassmorphic={true}>
           <CardContent className="text-center py-12">
             <LoadingSpinner />
@@ -107,7 +107,7 @@ export default function CollegeDetail() {
 
   if (error || !school) {
     return (
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto px-0 sm:px-0.5 md:px-1 lg:px-2 xl:px-3 py-1 sm:py-2 md:py-3 lg:py-4 xl:py-6">
         <Card glassmorphic={true}>
           <CardContent className="text-center py-12">
             <EmptyState
@@ -144,7 +144,7 @@ export default function CollegeDetail() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-0 sm:px-0.5 md:px-1 lg:px-2 py-2 sm:py-3 md:py-4 lg:py-6 space-y-3 sm:space-y-4 md:space-y-5 lg:space-y-6">
       {/* Back button */}
       <Button 
         variant="ghost" 
@@ -156,7 +156,7 @@ export default function CollegeDetail() {
 
       {/* College Header - Enhanced */}
       <Card glassmorphic={true} className="overflow-hidden border-2 border-white/10">
-        <CardContent className="p-8">
+        <CardContent className="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
           <div className="flex flex-col items-start gap-6">
             {/* Logo */}
             <div className="flex-shrink-0">

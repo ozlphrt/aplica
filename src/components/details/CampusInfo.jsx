@@ -79,7 +79,7 @@ export default function CampusInfo({ school }) {
 
   return (
     <Card glassmorphic={true} className="border-2 border-white/10 overflow-hidden">
-      <CardContent className="p-8 pt-8">
+      <CardContent className="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
         <div className="flex items-center gap-3 mb-8 mt-2">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/30 to-purple-600/30 flex items-center justify-center border border-purple-400/30">
             <Globe className="w-6 h-6 text-purple-300" />

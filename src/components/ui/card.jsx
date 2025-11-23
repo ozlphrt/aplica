@@ -20,7 +20,7 @@ export function Card({ className, children, glassmorphic = false, ...props }) {
 
 export function CardHeader({ className, children, ...props }) {
   return (
-    <div className={`p-6 ${className || ''}`} {...props}>
+    <div className={`p-3 sm:p-4 md:p-5 lg:p-6 ${className || ''}`} {...props}>
       {children}
     </div>
   );
@@ -28,7 +28,7 @@ export function CardHeader({ className, children, ...props }) {
 
 export function CardContent({ className, children, ...props }) {
   return (
-    <div className={`p-6 pt-0 ${className || ''}`} {...props}>
+    <div className={`p-3 sm:p-4 md:p-5 lg:p-6 pt-0 ${className || ''}`} {...props}>
       {children}
     </div>
   );
@@ -36,7 +36,7 @@ export function CardContent({ className, children, ...props }) {
 
 export function CardFooter({ className, children, ...props }) {
   return (
-    <div className={`p-6 pt-0 flex items-center ${className || ''}`} {...props}>
+    <div className={`p-3 sm:p-4 md:p-5 lg:p-6 pt-0 flex items-center ${className || ''}`} {...props}>
       {children}
     </div>
   );

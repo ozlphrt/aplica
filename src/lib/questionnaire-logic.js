@@ -18,9 +18,9 @@ const TIER_1_QUESTIONS = [
     defaultValue: 3.5,
     validation: {
       min: 0,
-      max: 5.0,
+      max: 6.0,
       required: true,
-      errorMessage: 'Please enter a valid GPA between 0 and 5.0',
+      errorMessage: 'Please enter a valid GPA between 0 and 6.0',
     },
     component: 'NumberInput',
     step: 0.01,

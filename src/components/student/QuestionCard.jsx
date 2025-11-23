@@ -21,19 +21,14 @@ export default function QuestionCard({
   onFinish,
 }) {
   const [error, setError] = useState(null);
+  // Drag state for GPA input (only used when question.id === 'gpa')
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartY, setDragStartY] = useState(0);
+  const [dragStartValue, setDragStartValue] = useState(0);
   
-  // Use defaultValue if value is null/undefined and question has defaultValue
-  const displayValue = (value === null || value === undefined) && question.defaultValue !== undefined
-    ? question.defaultValue
-    : value;
-  
-  // Auto-set default value when question is first shown (for NumberInput and Select)
-  useEffect(() => {
-    if ((value === null || value === undefined) && question.defaultValue !== undefined && 
-        (question.component === 'NumberInput' || question.component === 'Select')) {
-      onAnswer(question.id, question.defaultValue);
-    }
-  }, [question.id, question.defaultValue, question.component, value, onAnswer]);
+  // Use defaultValue as placeholder/suggestion, but don't auto-set it
+  // This ensures progress only counts when user explicitly provides an answer
+  const displayValue = value;
 
   if (!question) {
     return <div>No question available</div>;
@@ -110,53 +105,156 @@ export default function QuestionCard({
     onNext();
   };
 
+  // Add global event listeners for drag (GPA, SAT, ACT scores)
+  useEffect(() => {
+    if (!isDragging || !question) return;
+    const isDraggable = question.id === 'gpa' || question.id === 'sat_score' || question.id === 'act_score';
+    if (!isDraggable) return;
+    
+    const min = question.validation?.min || 0;
+    const max = question.validation?.max || (question.id === 'sat_score' ? 1600 : question.id === 'act_score' ? 36 : 6.0);
+    const step = question.step || (question.id === 'gpa' ? 0.01 : question.id === 'sat_score' ? 10 : 1);
+    
+    const touchMoveHandler = (e) => {
+      const deltaY = dragStartY - e.touches[0].clientY;
+      const pixelsPerStep = 10;
+      const steps = Math.round(deltaY / pixelsPerStep);
+      const newValue = Math.max(min, Math.min(max, dragStartValue + (steps * step)));
+      if (question.id === 'gpa') {
+        handleChange(parseFloat(newValue.toFixed(2)));
+      } else {
+        handleChange(Math.round(newValue));
+      }
+      e.preventDefault();
+    };
+    
+    const mouseMoveHandler = (e) => {
+      const deltaY = dragStartY - e.clientY;
+      const pixelsPerStep = 10;
+      const steps = Math.round(deltaY / pixelsPerStep);
+      const newValue = Math.max(min, Math.min(max, dragStartValue + (steps * step)));
+      if (question.id === 'gpa') {
+        handleChange(parseFloat(newValue.toFixed(2)));
+      } else {
+        handleChange(Math.round(newValue));
+      }
+    };
+    
+    const endHandler = () => {
+      setIsDragging(false);
+    };
+    
+    document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+    document.addEventListener('touchend', endHandler);
+    document.addEventListener('mousemove', mouseMoveHandler);
+    document.addEventListener('mouseup', endHandler);
+    
+    return () => {
+      document.removeEventListener('touchmove', touchMoveHandler);
+      document.removeEventListener('touchend', endHandler);
+      document.removeEventListener('mousemove', mouseMoveHandler);
+      document.removeEventListener('mouseup', endHandler);
+    };
+  }, [isDragging, dragStartY, dragStartValue, question, handleChange]);
+
   const renderInput = () => {
     switch (question.component) {
       case 'NumberInput':
-        // Special handling for GPA (x.xx format)
-        if (question.id === 'gpa') {
+        // Special handling for GPA, SAT, and ACT scores with touch/drag on value
+        if (question.id === 'gpa' || question.id === 'sat_score' || question.id === 'act_score') {
+          const min = question.validation?.min || 0;
+          const max = question.validation?.max || (question.id === 'sat_score' ? 1600 : question.id === 'act_score' ? 36 : 6.0);
+          const step = question.step || (question.id === 'gpa' ? 0.01 : question.id === 'sat_score' ? 10 : 1);
+          const currentValue = displayValue !== null && displayValue !== undefined ? displayValue : (question.defaultValue || min);
+          
+          // Format value based on question type
+          const formatValue = (val) => {
+            if (val === null || val === undefined) return '';
+            if (question.id === 'gpa') {
+              return val.toFixed(2);
+            } else {
+              return Math.round(val).toString();
+            }
+          };
+          
+          const handleTouchStart = (e) => {
+            setIsDragging(true);
+            setDragStartY(e.touches[0].clientY);
+            setDragStartValue(currentValue);
+            e.preventDefault();
+          };
+          
+          const handleMouseDown = (e) => {
+            setIsDragging(true);
+            setDragStartY(e.clientY);
+            setDragStartValue(currentValue);
+            e.preventDefault();
+          };
+          
+          const handleIncrement = () => {
+            const newValue = Math.min(currentValue + step, max);
+            if (question.id === 'gpa') {
+              handleChange(parseFloat(newValue.toFixed(2)));
+            } else {
+              handleChange(Math.round(newValue));
+            }
+          };
+          
+          const handleDecrement = () => {
+            const newValue = Math.max(currentValue - step, min);
+            if (question.id === 'gpa') {
+              handleChange(parseFloat(newValue.toFixed(2)));
+            } else {
+              handleChange(Math.round(newValue));
+            }
+          };
+          
           return (
             <div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    const currentVal = displayValue !== null && displayValue !== undefined ? displayValue : (question.defaultValue || 0);
-                    const newValue = Math.max(currentVal - (question.step || 0.01), question.validation?.min || 0);
-                    handleChange(parseFloat(newValue.toFixed(2)));
-                  }}
-                  className="h-11 w-11 rounded-lg border border-white/20 bg-white/5 hover:bg-white/10 text-white disabled:opacity-40 disabled:cursor-not-allowed"
-                  disabled={question.validation?.min !== undefined && (displayValue || question.defaultValue || 0) <= question.validation.min}
+                  onClick={handleDecrement}
+                  className="h-11 w-11 rounded-lg border border-white/20 bg-white/5 hover:bg-white/10 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  disabled={currentValue <= min}
                 >
                   −
                 </button>
-                <Input
-                  type="number"
-                  value={displayValue !== null && displayValue !== undefined ? displayValue.toFixed(2) : ''}
-                  onChange={(e) => {
-                    const val = parseFloat(e.target.value);
-                    if (!isNaN(val)) {
-                      handleChange(parseFloat(val.toFixed(2)));
-                    } else if (e.target.value === '') {
-                      handleChange(null);
-                    }
-                  }}
-                  min={question.validation?.min}
-                  max={question.validation?.max}
-                  step={question.step || 0.01}
-                  placeholder={question.placeholder}
-                  glassmorphic={true}
-                  className="text-center"
-                />
+                <div
+                  className="flex-1 relative"
+                  onTouchStart={handleTouchStart}
+                  onMouseDown={handleMouseDown}
+                >
+                  <Input
+                    type="number"
+                    value={formatValue(displayValue)}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      if (!isNaN(val)) {
+                        const clampedVal = Math.max(min, Math.min(max, val));
+                        if (question.id === 'gpa') {
+                          handleChange(parseFloat(clampedVal.toFixed(2)));
+                        } else {
+                          handleChange(Math.round(clampedVal));
+                        }
+                      } else if (e.target.value === '') {
+                        handleChange(null);
+                      }
+                    }}
+                    min={min}
+                    max={max}
+                    step={step}
+                    placeholder={question.placeholder}
+                    glassmorphic={true}
+                    className={`text-center ${isDragging ? 'cursor-ns-resize select-none' : 'cursor-ns-resize'}`}
+                    readOnly={isDragging}
+                  />
+                </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    const currentVal = displayValue !== null && displayValue !== undefined ? displayValue : (question.defaultValue || 0);
-                    const newValue = Math.min(currentVal + (question.step || 0.01), question.validation?.max || 5.0);
-                    handleChange(parseFloat(newValue.toFixed(2)));
-                  }}
-                  className="h-11 w-11 rounded-lg border border-white/20 bg-white/5 hover:bg-white/10 text-white disabled:opacity-40 disabled:cursor-not-allowed"
-                  disabled={question.validation?.max !== undefined && (displayValue || question.defaultValue || 0) >= question.validation.max}
+                  onClick={handleIncrement}
+                  className="h-11 w-11 rounded-lg border border-white/20 bg-white/5 hover:bg-white/10 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  disabled={currentValue >= max}
                 >
                   +
                 </button>
@@ -347,30 +445,53 @@ export default function QuestionCard({
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex justify-between items-center pt-4 border-t border-white/10">
-        <div className="flex gap-2">
+      <div className="flex justify-between items-center pt-6 mt-6 border-t border-white/10 gap-2">
+        <div className="flex gap-2 flex-shrink-0">
           {canGoPrevious ? (
-            <Button variant="outline" onClick={onPrevious}>
-              ← Back
-            </Button>
-          ) : (
-            <div></div>
-          )}
+            <button
+              onClick={onPrevious}
+              className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white font-medium hover:bg-white/15 hover:border-white/30 transition-all duration-200 flex items-center justify-center gap-1.5 text-xs sm:text-sm"
+            >
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+              </svg>
+              <span className="hidden xs:inline">Back</span>
+            </button>
+          ) : null}
           {!question.validation?.required && (
-            <Button variant="ghost" onClick={onSkip}>
+            <button
+              onClick={onSkip}
+              className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white/5 backdrop-blur-sm border border-white/10 text-white/80 font-medium hover:bg-white/10 hover:text-white hover:border-white/20 transition-all duration-200 text-xs sm:text-sm whitespace-nowrap"
+            >
               Skip
-            </Button>
+            </button>
           )}
         </div>
-        <div>
+        <div className="flex-shrink-0">
           {isLastQuestion && canGenerateMatches ? (
-            <Button variant="primary" onClick={onFinish}>
-              See My Matches
-            </Button>
+            <button
+              onClick={onFinish}
+              className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-1.5 text-xs sm:text-sm"
+            >
+              <span className="whitespace-nowrap hidden sm:inline">See My Matches</span>
+              <span className="whitespace-nowrap sm:hidden">Matches</span>
+              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button>
           ) : (
-            <Button variant="primary" onClick={handleContinue} disabled={!!error}>
-              {isLastQuestion ? 'Finish' : 'Next →'}
-            </Button>
+            <button
+              onClick={handleContinue}
+              disabled={!!error}
+              className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-blue-500 disabled:hover:to-blue-600"
+            >
+              <span>{isLastQuestion ? 'Finish' : 'Next'}</span>
+              {!isLastQuestion && (
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              )}
+            </button>
           )}
         </div>
       </div>

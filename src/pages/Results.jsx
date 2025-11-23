@@ -3,10 +3,12 @@
  * Displays college matches after questionnaire completion
  */
 import { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { User, Pencil, ArrowUpDown, Filter, X } from 'lucide-react';
 import useStudentProfileStore from '../stores/studentProfileStore';
 import { generateMatches } from '../lib/matching-algorithm';
+import { clearCache } from '../lib/scorecard-api';
+import { calculateProfileCompleteness } from '../lib/questionnaire-logic';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Select } from '../components/ui/select';
@@ -17,11 +19,13 @@ import EmptyState from '../components/shared/EmptyState';
 
 export default function Results() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { answers } = useStudentProfileStore();
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedTier, setSelectedTier] = useState('all');
+  const tierFromUrl = searchParams.get('tier') || 'all';
+  const [selectedTier, setSelectedTier] = useState(tierFromUrl);
   const [sortBy, setSortBy] = useState('fitScore'); // fitScore, admissionRate, cost, name
   const [sortOrder, setSortOrder] = useState('desc'); // asc, desc
   const [showFilters, setShowFilters] = useState(false);
@@ -31,16 +35,38 @@ export default function Results() {
 
   useEffect(() => {
     async function loadMatches() {
+      // Always clear matches first to prevent stale data
+      setMatches([]);
+      setLoading(false);
+      
+      // If no answers, don't generate matches
+      if (!answers || Object.keys(answers).length === 0) {
+        return;
+      }
+      
+      // Use the same completeness check as home page and questionnaire
+      // Only generate matches if Tier 1 is complete (canGenerateMatches = true)
+      const completeness = calculateProfileCompleteness(answers);
+      if (!completeness.canGenerateMatches) {
+        return;
+      }
+      
       try {
         setLoading(true);
         const result = await generateMatches(answers, { limit: 50 });
-        setMatches(result.matches || []);
+        // Double-check: if result is empty or invalid, don't set matches
+        if (result && result.matches && Array.isArray(result.matches) && result.matches.length > 0) {
+          setMatches(result.matches);
+        } else {
+          setMatches([]);
+        }
         if (result.warnings && result.warnings.length > 0) {
           console.warn('Matching warnings:', result.warnings);
         }
       } catch (err) {
         console.error('Error loading matches:', err);
         setError(err.message || 'Failed to load matches');
+        setMatches([]);
       } finally {
         setLoading(false);
       }
@@ -48,6 +74,12 @@ export default function Results() {
 
     loadMatches();
   }, [answers]);
+
+  // Update selectedTier when URL param changes
+  useEffect(() => {
+    const tierFromUrl = searchParams.get('tier') || 'all';
+    setSelectedTier(tierFromUrl);
+  }, [searchParams]);
 
   // Calculate tier distribution
   const tierCounts = {
@@ -154,7 +186,7 @@ export default function Results() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto px-0 sm:px-0.5 md:px-1 lg:px-2 xl:px-3 py-1 sm:py-2 md:py-3 lg:py-4 xl:py-6">
         <Card glassmorphic={true}>
           <CardContent className="text-center py-12">
             <LoadingSpinner />
@@ -167,7 +199,7 @@ export default function Results() {
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto px-0 sm:px-0.5 md:px-1 lg:px-2 xl:px-3 py-1 sm:py-2 md:py-3 lg:py-4 xl:py-6">
         <Card glassmorphic={true}>
           <CardContent className="text-center py-12">
             <p className="text-error mb-4">{error}</p>
@@ -184,7 +216,7 @@ export default function Results() {
     <div className="max-w-7xl mx-auto p-6">
       {/* Header */}
       <div className="mb-6">
-        <Card glassmorphic={true} className="p-4">
+        <Card glassmorphic={true} className="p-2 sm:p-3 md:p-4">
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-2xl font-semibold text-white mb-2">Your College Matches</h1>
@@ -223,7 +255,7 @@ export default function Results() {
       ) : (
         <div className="space-y-6">
           {/* Controls Bar */}
-          <Card glassmorphic={true} className="p-4">
+          <Card glassmorphic={true} className="p-2 sm:p-3 md:p-4">
             <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
               {/* Mobile: Full width, Desktop: Auto */}
               <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
@@ -254,22 +286,6 @@ export default function Results() {
               
               {/* Filter Toggle */}
               <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                {selectedForComparison.size > 0 && (
-                  <Button
-                    variant="primary"
-                    onClick={() => {
-                      // Store selected IDs in sessionStorage for comparison page
-                      const selectedIds = Array.from(selectedForComparison);
-                      sessionStorage.setItem('comparisonSchools', JSON.stringify(selectedIds));
-                      // For now, navigate to first school - could create dedicated comparison page
-                      if (selectedIds.length > 0) {
-                        navigate(`/college/${selectedIds[0]}`);
-                      }
-                    }}
-                  >
-                    Compare ({selectedForComparison.size})
-                  </Button>
-                )}
                 <Button
                   variant="ghost"
                   onClick={() => setShowFilters(!showFilters)}
@@ -336,79 +352,115 @@ export default function Results() {
             </div>
           </Card>
 
-          {/* Tier Filter Tiles - 2x2 Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => setSelectedTier('all')}
-              className={`p-6 rounded-xl transition-all ${
-                selectedTier === 'all' 
-                  ? 'bg-white/20 border-2 border-white/40 shadow-lg scale-[1.02]' 
-                  : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20'
-              }`}
-            >
-              <div className="text-left">
-                <div className="text-sm text-white/70 mb-1">All Schools</div>
-                <div className={`text-3xl font-bold ${
-                  selectedTier === 'all' ? 'text-white' : 'text-white/90'
-                }`}>
-                  {tierCounts.all}
+          {/* Tier Filter Tiles - 2x2 Grid with Compare Button */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => {
+                  setSelectedTier('all');
+                  setSearchParams({ tier: 'all' });
+                }}
+                className={`p-3 sm:p-4 md:p-5 lg:p-6 rounded-xl transition-all ${
+                  selectedTier === 'all' 
+                    ? 'bg-white/20 border-2 border-white/40 shadow-lg scale-[1.02]' 
+                    : 'bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20'
+                }`}
+              >
+                <div className="text-left">
+                  <div className="text-sm text-white/70 mb-1">All Schools</div>
+                  <div className={`text-3xl font-bold ${
+                    selectedTier === 'all' ? 'text-white' : 'text-white/90'
+                  }`}>
+                    {tierCounts.all}
+                  </div>
                 </div>
-              </div>
-            </button>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setSelectedTier('reach');
+                  setSearchParams({ tier: 'reach' });
+                }}
+                className={`p-3 sm:p-4 md:p-5 lg:p-6 rounded-xl transition-all ${
+                  selectedTier === 'reach' 
+                    ? 'bg-reach-light/30 border-2 border-reach-light/60 shadow-lg scale-[1.02]' 
+                    : 'bg-white/5 border border-white/10 hover:bg-reach-light/10 hover:border-reach-light/30'
+                }`}
+              >
+                <div className="text-left">
+                  <div className="text-sm text-white/70 mb-1">Reach</div>
+                  <div className={`text-3xl font-bold ${
+                    selectedTier === 'reach' ? 'text-reach-light' : 'text-white/90'
+                  }`}>
+                    {tierCounts.reach}
+                  </div>
+                </div>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setSelectedTier('target');
+                  setSearchParams({ tier: 'target' });
+                }}
+                className={`p-3 sm:p-4 md:p-5 lg:p-6 rounded-xl transition-all ${
+                  selectedTier === 'target' 
+                    ? 'bg-target-light/30 border-2 border-target-light/60 shadow-lg scale-[1.02]' 
+                    : 'bg-white/5 border border-white/10 hover:bg-target-light/10 hover:border-target-light/30'
+                }`}
+              >
+                <div className="text-left">
+                  <div className="text-sm text-white/70 mb-1">Target</div>
+                  <div className={`text-3xl font-bold ${
+                    selectedTier === 'target' ? 'text-target-light' : 'text-white/90'
+                  }`}>
+                    {tierCounts.target}
+                  </div>
+                </div>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setSelectedTier('safety');
+                  setSearchParams({ tier: 'safety' });
+                }}
+                className={`p-3 sm:p-4 md:p-5 lg:p-6 rounded-xl transition-all ${
+                  selectedTier === 'safety' 
+                    ? 'bg-safety-light/30 border-2 border-safety-light/60 shadow-lg scale-[1.02]' 
+                    : 'bg-white/5 border border-white/10 hover:bg-safety-light/10 hover:border-safety-light/30'
+                }`}
+              >
+                <div className="text-left">
+                  <div className="text-sm text-white/70 mb-1">Safety</div>
+                  <div className={`text-3xl font-bold ${
+                    selectedTier === 'safety' ? 'text-safety-light' : 'text-white/90'
+                  }`}>
+                    {tierCounts.safety}
+                  </div>
+                </div>
+              </button>
+            </div>
             
-            <button
-              onClick={() => setSelectedTier('reach')}
-              className={`p-6 rounded-xl transition-all ${
-                selectedTier === 'reach' 
-                  ? 'bg-reach-light/30 border-2 border-reach-light/60 shadow-lg scale-[1.02]' 
-                  : 'bg-white/5 border border-white/10 hover:bg-reach-light/10 hover:border-reach-light/30'
-              }`}
-            >
-              <div className="text-left">
-                <div className="text-sm text-white/70 mb-1">Reach</div>
-                <div className={`text-3xl font-bold ${
-                  selectedTier === 'reach' ? 'text-reach-light' : 'text-white/90'
-                }`}>
-                  {tierCounts.reach}
-                </div>
+            {/* Compare Button */}
+            {selectedForComparison.size > 0 && (
+              <div className="flex justify-center">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={() => {
+                    // Store selected IDs in sessionStorage for comparison page
+                    const selectedIds = Array.from(selectedForComparison);
+                    sessionStorage.setItem('comparisonSchools', JSON.stringify(selectedIds));
+                    // For now, navigate to first school - could create dedicated comparison page
+                    if (selectedIds.length > 0) {
+                      navigate(`/college/${selectedIds[0]}`);
+                    }
+                  }}
+                  className="shadow-lg"
+                >
+                  Compare ({selectedForComparison.size})
+                </Button>
               </div>
-            </button>
-            
-            <button
-              onClick={() => setSelectedTier('target')}
-              className={`p-6 rounded-xl transition-all ${
-                selectedTier === 'target' 
-                  ? 'bg-target-light/30 border-2 border-target-light/60 shadow-lg scale-[1.02]' 
-                  : 'bg-white/5 border border-white/10 hover:bg-target-light/10 hover:border-target-light/30'
-              }`}
-            >
-              <div className="text-left">
-                <div className="text-sm text-white/70 mb-1">Target</div>
-                <div className={`text-3xl font-bold ${
-                  selectedTier === 'target' ? 'text-target-light' : 'text-white/90'
-                }`}>
-                  {tierCounts.target}
-                </div>
-              </div>
-            </button>
-            
-            <button
-              onClick={() => setSelectedTier('safety')}
-              className={`p-6 rounded-xl transition-all ${
-                selectedTier === 'safety' 
-                  ? 'bg-safety-light/30 border-2 border-safety-light/60 shadow-lg scale-[1.02]' 
-                  : 'bg-white/5 border border-white/10 hover:bg-safety-light/10 hover:border-safety-light/30'
-              }`}
-            >
-              <div className="text-left">
-                <div className="text-sm text-white/70 mb-1">Safety</div>
-                <div className={`text-3xl font-bold ${
-                  selectedTier === 'safety' ? 'text-safety-light' : 'text-white/90'
-                }`}>
-                  {tierCounts.safety}
-                </div>
-              </div>
-            </button>
+            )}
           </div>
 
           {/* Results Count */}

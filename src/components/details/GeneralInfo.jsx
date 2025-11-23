@@ -49,7 +49,7 @@ export default function GeneralInfo({ school }) {
 
   return (
     <Card glassmorphic={true} className="border-2 border-white/10 overflow-hidden">
-      <CardContent className="p-8">
+      <CardContent className="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
         <h2 className="text-2xl font-bold text-white mb-8">General Information</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

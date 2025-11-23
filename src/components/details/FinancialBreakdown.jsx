@@ -79,7 +79,7 @@ export default function FinancialBreakdown({ school }) {
 
   return (
     <Card glassmorphic={true} className="border-2 border-white/10 overflow-hidden">
-      <CardContent className="p-8 pt-8">
+      <CardContent className="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
         <div className="flex items-center gap-3 mb-8 mt-2">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/30 to-green-600/30 flex items-center justify-center border border-green-400/30">
             <DollarSign className="w-6 h-6 text-green-300" />

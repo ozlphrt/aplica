@@ -23,6 +23,15 @@ import { getStatesForRegion } from '../utils/regions.js';
 export async function generateMatches(studentProfile, options = {}) {
   console.log('generateMatches called with:', studentProfile);
   
+  // If profile is empty or invalid, return empty matches immediately
+  if (!studentProfile || typeof studentProfile !== 'object' || Object.keys(studentProfile).length === 0) {
+    console.log('Empty profile - returning no matches');
+    return {
+      matches: [],
+      warnings: [],
+    };
+  }
+  
   const { limit = 50, includeReach = true } = options;
   
   // Build filters from Tier 1 answers
@@ -674,16 +683,194 @@ export async function generateMatches(studentProfile, options = {}) {
 /**
  * Calculate fit score for a single school
  * @param {Object} school - School data
- * @param {Object} studentProfile - Student profile
- * @returns {Object} - Fit scores breakdown
+ * @param {Object} studentProfile - Student profile with answers
+ * @param {Object} filters - Optional filters (for budget, regions, etc.)
+ * @returns {Object} - School with fitScore and academicTier
  */
-export function calculateFitScore(school, studentProfile) {
-  // TODO: Phase 4 implementation
+export function calculateFitScore(school, studentProfile = {}, filters = {}) {
+  const admitRate = school['latest.admissions.admission_rate.overall'];
+  const satMath = school['latest.admissions.sat_scores.midpoint.math'];
+  const satEbrw = school['latest.admissions.sat_scores.midpoint.critical_reading'];
+  const satTotal = satMath && satEbrw ? satMath + satEbrw : null;
+  const actComposite = school['latest.admissions.act_scores.midpoint.cumulative'];
+  
+  // Classify academic tier
+  let academicTier = 'target';
+  const gpa = studentProfile.gpa || 3.5;
+  const satScore = studentProfile.sat_score;
+  const actScore = studentProfile.act_score;
+  
+  if (admitRate !== null && admitRate !== undefined) {
+    if (admitRate < 0.4) {
+      academicTier = 'reach';
+    } else if (admitRate > 0.65) {
+      academicTier = 'safety';
+    }
+  } else if (satTotal && satScore) {
+    if (satTotal > satScore + 50) {
+      academicTier = 'reach';
+    } else if (satTotal < satScore - 50) {
+      academicTier = 'safety';
+    }
+  } else if (actComposite && actScore) {
+    if (actComposite > actScore + 2) {
+      academicTier = 'reach';
+    } else if (actComposite < actScore - 2) {
+      academicTier = 'safety';
+    }
+  } else {
+    if (gpa < 3.0) {
+      academicTier = 'reach';
+    } else if (gpa > 3.8) {
+      academicTier = 'target';
+    }
+  }
+  
+  // Calculate fit score
+  let fitScore = 35; // Base score
+  
+  // 1. Academic Fit (0-25 points)
+  if (admitRate !== null && admitRate !== undefined) {
+    if (admitRate >= 0.3 && admitRate <= 0.7) {
+      const distanceFromIdeal = Math.abs(admitRate - 0.5);
+      fitScore += 25 - (distanceFromIdeal * 30);
+    } else if (admitRate > 0.7) {
+      fitScore += 12 + (admitRate - 0.7) * 15;
+    } else {
+      fitScore += 8 + (0.3 - admitRate) * 8;
+    }
+  } else {
+    if (satTotal && satScore) {
+      const scoreDiff = Math.abs(satTotal - satScore);
+      if (scoreDiff <= 50) fitScore += 22;
+      else if (scoreDiff <= 100) fitScore += 18;
+      else if (scoreDiff <= 150) fitScore += 14;
+      else fitScore += 10;
+    } else {
+      fitScore += 15;
+    }
+  }
+  
+  // 2. Financial Fit (0-20 points)
+  const cost = school['latest.cost.attendance.academic_year'] || 
+              school['latest.cost.avg_net_price.overall'] ||
+              school['latest.cost.tuition.in_state'] ||
+              school['latest.cost.tuition.out_of_state'];
+  const maxBudget = filters.maxBudget || studentProfile.max_annual_budget;
+  if (cost && maxBudget) {
+    const budgetRatio = cost / maxBudget;
+    if (budgetRatio <= 0.6) fitScore += 20;
+    else if (budgetRatio <= 0.8) fitScore += 17;
+    else if (budgetRatio <= 1.0) fitScore += 14;
+    else if (budgetRatio <= 1.1) fitScore += 8;
+    else if (budgetRatio <= 1.2) fitScore += 4;
+    else fitScore += 0;
+  } else if (cost) {
+    if (cost <= 20000) fitScore += 15;
+    else if (cost <= 30000) fitScore += 12;
+    else if (cost <= 40000) fitScore += 9;
+    else fitScore += 6;
+  } else {
+    fitScore += 10;
+  }
+  
+  // 3. Outcomes Fit (0-15 points)
+  const gradRate = school['latest.completion.completion_rate_4yr_150nt'] || 
+                  school['latest.completion.completion_rate_6yr_150nt'];
+  const retentionRate = school['latest.student.retention_rate.four_year.full_time'];
+  
+  if (gradRate) {
+    if (gradRate >= 0.85) fitScore += 9;
+    else if (gradRate >= 0.75) fitScore += 7;
+    else if (gradRate >= 0.65) fitScore += 5;
+    else if (gradRate >= 0.55) fitScore += 3;
+    else fitScore += 1;
+  }
+  
+  if (retentionRate) {
+    if (retentionRate >= 0.90) fitScore += 6;
+    else if (retentionRate >= 0.85) fitScore += 5;
+    else if (retentionRate >= 0.80) fitScore += 4;
+    else if (retentionRate >= 0.75) fitScore += 2;
+    else fitScore += 1;
+  }
+  
+  // 4. Geographic Fit (0-8 points)
+  const preferredRegions = studentProfile.preferred_regions || [];
+  const schoolState = school['school.state'];
+  // Check if school state is in preferred regions (simplified - would need region mapping)
+  if (preferredRegions.length > 0) {
+    fitScore += 4; // Neutral bonus if preferences exist
+  } else {
+    fitScore += 4;
+  }
+  
+  // 5. Size Fit (0-7 points)
+  const size = school['latest.student.size'];
+  const preferredSize = studentProfile.preferred_size || [];
+  if (size && preferredSize.length > 0) {
+    const sizeRanges = {
+      'very_small': { min: 0, max: 1000 },
+      'small': { min: 1000, max: 5000 },
+      'medium': { min: 5000, max: 15000 },
+      'large': { min: 15000, max: 25000 },
+      'very_large': { min: 25000, max: 1000000 },
+    };
+    
+    const matchesPreferred = preferredSize.some(rangeKey => {
+      const range = sizeRanges[rangeKey];
+      return size >= range.min && size < range.max;
+    });
+    
+    if (matchesPreferred) {
+      fitScore += 7;
+    } else {
+      fitScore += 3;
+    }
+  } else if (size) {
+    fitScore += 4;
+  }
+  
+  // 6. Setting Fit (0-5 points)
+  const locale = school['latest.school.locale'];
+  const preferredSetting = studentProfile.preferred_setting || [];
+  if (locale && preferredSetting.length > 0) {
+    const localeMap = {
+      'city': [11, 12, 13],
+      'suburb': [21, 22, 23],
+      'town': [31, 32, 33],
+      'rural': [41, 42, 43],
+    };
+    
+    const matchesSetting = preferredSetting.some(setting => {
+      const locales = localeMap[setting];
+      return locales && locales.includes(locale);
+    });
+    
+    if (matchesSetting) {
+      fitScore += 5;
+    } else {
+      fitScore += 2;
+    }
+  } else if (locale) {
+    fitScore += 3;
+  }
+  
+  // Tier 3 Preferences bonus
+  const extracurricularPriorities = studentProfile.extracurricular_priorities || [];
+  const specialPrograms = studentProfile.special_programs || [];
+  const campusCulture = studentProfile.campus_culture || [];
+  
+  if (extracurricularPriorities.length > 0 || specialPrograms.length > 0 || campusCulture.length > 0) {
+    fitScore += 2;
+  }
+  
+  // Ensure score is between 0-100
+  fitScore = Math.max(0, Math.min(100, Math.round(fitScore)));
+  
   return {
-    academic: 0,
-    financial: 0,
-    environmental: 0,
-    outcomes: 0,
-    composite: 0,
+    ...school,
+    fitScore,
+    academicTier,
   };
 }

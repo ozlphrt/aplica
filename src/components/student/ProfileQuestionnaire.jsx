@@ -5,11 +5,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useStudentProfileStore from '../../stores/studentProfileStore';
+import useSavedCollegesStore from '../../stores/savedCollegesStore';
 import { 
   getQuestionsForTier, 
   getAllVisibleQuestions,
   calculateProfileCompleteness 
 } from '../../lib/questionnaire-logic';
+import { clearCache } from '../../lib/scorecard-api';
 import { Progress } from '../ui/progress';
 import { Card, CardContent } from '../ui/card';
 import { Button } from '../ui/button';
@@ -33,9 +35,11 @@ export default function ProfileQuestionnaire() {
   const [completeness, setCompleteness] = useState({ overall: 0, tier1: 0, tier2: 0, tier3: 0, canGenerateMatches: false });
   const [showRestartModal, setShowRestartModal] = useState(false);
 
-  // Initialize profile on mount
+  // Initialize profile on mount - but only if there's no profileId AND no answers
+  // This prevents re-initializing when answers have been reset
   useEffect(() => {
-    if (!useStudentProfileStore.getState().profileId) {
+    const state = useStudentProfileStore.getState();
+    if (!state.profileId && (!state.answers || Object.keys(state.answers).length === 0)) {
       initializeProfile();
     }
   }, [initializeProfile]);
@@ -144,16 +148,29 @@ export default function ProfileQuestionnaire() {
   };
 
   const confirmRestart = () => {
+    // Clear API cache to prevent stale matches
+    clearCache();
+    // Clear sessionStorage (comparison schools, etc.)
+    sessionStorage.removeItem('comparisonSchools');
+    // Clear saved colleges (My List)
+    useSavedCollegesStore.getState().clearAll();
+    // Reset profile (clears answers)
     resetProfile();
+    // Initialize fresh profile
     initializeProfile();
+    // Reset local state
     setCurrentQuestion(0);
     setCurrentTier(1);
+    // Reset completeness to zero
+    setCompleteness({ overall: 0, tier1: 0, tier2: 0, tier3: 0, canGenerateMatches: false });
     setShowRestartModal(false);
+    // Navigate to home immediately - the empty answers will prevent match generation
+    navigate('/');
   };
 
   if (!currentQuestion) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto px-0 sm:px-0.5 md:px-1 lg:px-2 py-2 sm:py-3 md:py-4 lg:py-6">
         <Card glassmorphic={true}>
           <CardContent className="text-center py-12">
             <h2 className="text-2xl font-semibold text-white mb-4">Profile Complete!</h2>
@@ -175,7 +192,7 @@ export default function ProfileQuestionnaire() {
     <div className="max-w-4xl mx-auto p-6">
       {/* Progress Bar */}
       <div className="mb-6 sticky top-4 z-10">
-        <Card glassmorphic={true} className="p-4">
+        <Card glassmorphic={true} className="p-2 sm:p-3 md:p-4">
           <div className="flex justify-between items-start mb-2">
             <div className="flex-1">
               <div className="flex justify-between items-center mb-2">
@@ -202,7 +219,7 @@ export default function ProfileQuestionnaire() {
 
       {/* Question Card */}
       <Card glassmorphic={true}>
-        <CardContent className="p-6 pt-8">
+        <CardContent className="p-3 sm:p-4 md:p-6 pt-4 sm:pt-6 md:pt-8">
           <QuestionCard
             question={currentQuestion}
             value={answers[currentQuestion.id]}

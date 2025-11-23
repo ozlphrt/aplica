@@ -15,7 +15,7 @@ export default function Layout({ children }) {
       </div>
       
       <Navigation />
-      <main className="container mx-auto px-4 py-8 max-w-7xl relative z-10">
+      <main className="container mx-auto px-0 sm:px-0.5 md:px-1 lg:px-2 py-4 sm:py-6 md:py-8 max-w-[100%] relative z-10">
         {children}
       </main>
     </div>
