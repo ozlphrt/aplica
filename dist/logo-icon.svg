@@ -1,0 +1,39 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Subtle fine-grained texture pattern (scattered dark dots) -->
+    <pattern id="texture" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="10" cy="15" r="1.5" fill="rgba(0,0,0,0.12)"/>
+      <circle cx="25" cy="8" r="1" fill="rgba(0,0,0,0.1)"/>
+      <circle cx="32" cy="28" r="1.2" fill="rgba(0,0,0,0.11)"/>
+      <circle cx="8" cy="32" r="0.8" fill="rgba(0,0,0,0.09)"/>
+      <circle cx="18" cy="22" r="1" fill="rgba(0,0,0,0.1)"/>
+      <circle cx="30" cy="15" r="0.7" fill="rgba(0,0,0,0.08)"/>
+      <circle cx="5" cy="12" r="0.9" fill="rgba(0,0,0,0.09)"/>
+      <circle cx="35" cy="5" r="1.1" fill="rgba(0,0,0,0.1)"/>
+    </pattern>
+  </defs>
+  
+  <!-- Red rounded square background with texture -->
+  <rect width="512" height="512" rx="80" ry="80" fill="#DC2626"/>
+  <rect width="512" height="512" rx="80" ry="80" fill="url(#texture)"/>
+  
+  <!-- Graduation cap (mortarboard) - upper-left to upper-center -->
+  <g transform="translate(256, 140)">
+    <!-- Cap top: white, slightly skewed rectangular shape, wider than tall -->
+    <!-- Left side slightly lower than right, bottom edge angles upwards from left to right -->
+    <path d="M -120 -50 L 120 -40 L 100 100 L -100 90 Z" fill="white"/>
+    <!-- Cap band: thin horizontal white rectangle -->
+    <rect x="-80" y="95" width="160" height="18" rx="9" fill="white"/>
+    <!-- Tassel button: small white circular button on top-left corner -->
+    <circle cx="-100" cy="-45" r="10" fill="white"/>
+    <!-- Tassel string: extends diagonally downwards and slightly to the right -->
+    <line x1="-100" y1="-45" x2="-85" y2="60" stroke="white" stroke-width="14" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Checkmark - lower-right area, below and slightly to the right of cap -->
+  <g transform="translate(320, 340)">
+    <!-- Shorter segment: diagonally upwards and to the right -->
+    <!-- Longer segment: diagonally downwards and to the right -->
+    <path d="M -20 30 L 30 80 L 110 -30" stroke="white" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+</svg>
