@@ -57,8 +57,8 @@ export default function GeneralInfo({ school }) {
           {location && (
             <div className="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center border border-blue-400/30 flex-shrink-0">
-                  <MapPin className="w-5 h-5 text-blue-300" />
+                <div className="w-10 h-10 rounded-lg bg-primary-500/20 flex items-center justify-center border border-primary-400/30 flex-shrink-0">
+                  <MapPin className="w-5 h-5 text-primary-300" />
                 </div>
                 <div className="flex-1">
                   <div className="text-xs text-white/60 uppercase tracking-wide mb-1">Location</div>
@@ -72,8 +72,8 @@ export default function GeneralInfo({ school }) {
           {size && (
             <div className="p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center border border-purple-400/30 flex-shrink-0">
-                  <Users className="w-5 h-5 text-purple-300" />
+                <div className="w-10 h-10 rounded-lg bg-primary-500/20 flex items-center justify-center border border-primary-400/30 flex-shrink-0">
+                  <Users className="w-5 h-5 text-primary-300" />
                 </div>
                 <div className="flex-1">
                   <div className="text-xs text-white/60 uppercase tracking-wide mb-1">Student Body Size</div>

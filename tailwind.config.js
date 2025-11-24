@@ -7,69 +7,69 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary: Subtle Blue (trust, education) - Muted tones
+        // Primary: Pure Neutral Gray (no blue tint) - Minimal
         primary: {
-          50: '#f0f4f8',
-          100: '#d9e2ec',
-          200: '#bcccdc',
-          300: '#9fb3c8',
-          400: '#829ab1',
-          500: '#627d98',   // Main brand color - Muted blue-gray
-          600: '#486581',   // Hover states
-          700: '#334e68',
-          800: '#243b53',
-          900: '#102a43',
+          50: '#f9fafb',
+          100: '#f3f4f6',
+          200: '#e5e7eb',
+          300: '#d1d5db',
+          400: '#9ca3af',
+          500: '#6b7280',   // Main brand color - Pure neutral gray
+          600: '#4b5563',   // Hover states
+          700: '#374151',
+          800: '#1f2937',
+          900: '#111827',
         },
         
-        // Academic tiers - Semantic colors matching meaning
+        // Academic tiers - Pure Neutral Gray
         reach: {
-          light: 'rgba(196, 181, 253, 0.4)',   // Purple background - ambition, prestige
-          DEFAULT: '#a78bfa', // Medium purple/violet
-          dark: '#7c3aed',    // Dark purple for text - better contrast
+          light: 'rgba(156, 163, 175, 0.2)',   // Neutral gray background - minimal
+          DEFAULT: '#9ca3af', // Neutral gray
+          dark: '#6b7280',    // Darker gray for text
         },
         target: {
-          light: 'rgba(103, 232, 249, 0.4)',   // Cyan/Teal background - balance, harmony
-          DEFAULT: '#06b6d4', // Medium cyan/teal
-          dark: '#0891b2',    // Dark cyan for text - better contrast
+          light: 'rgba(107, 114, 128, 0.2)',   // Neutral gray background - balance
+          DEFAULT: '#6b7280', // Medium neutral gray
+          dark: '#4b5563',    // Dark gray for text
         },
         safety: {
-          light: 'rgba(191, 219, 254, 0.4)',   // Blue background - security, confidence
-          DEFAULT: '#6b9dc4', // Medium blue
-          dark: '#3d5f7a',    // Dark blue for text - better contrast
+          light: 'rgba(75, 85, 99, 0.2)',   // Dark gray background - security
+          DEFAULT: '#4b5563', // Dark neutral gray
+          dark: '#374151',    // Darker gray for text
         },
         
-        // Financial indicators - Semantic colors
+        // Financial indicators - Pure Neutral Gray
         affordable: {
-          light: 'rgba(134, 239, 172, 0.4)',   // Green background - financial security
-          DEFAULT: '#4ade80', // Medium green (distinct from target)
-          dark: '#16a34a',    // Dark green for text
+          light: 'rgba(107, 114, 128, 0.2)',   // Neutral gray background
+          DEFAULT: '#6b7280', // Neutral gray
+          dark: '#4b5563',    // Dark gray for text
         },
         expensive: {
-          light: 'rgba(254, 202, 202, 0.45)',   // Red background - more visible for critical
-          DEFAULT: '#d47d7d', // Medium red
-          dark: '#9c4a4a',    // Dark red for text - better contrast
+          light: 'rgba(75, 85, 99, 0.25)',   // Dark gray background - subtle warning
+          DEFAULT: '#4b5563', // Dark neutral gray
+          dark: '#374151',    // Darker gray for text
         },
         
-        // Semantic colors - Subtle except for critical
+        // Semantic colors - Pure Neutral Gray
         success: {
-          light: 'rgba(167, 243, 208, 0.2)',
-          DEFAULT: '#6b9b7a', // Muted green
-          dark: '#5a8570',
+          light: 'rgba(107, 114, 128, 0.15)',
+          DEFAULT: '#6b7280', // Neutral gray
+          dark: '#4b5563',
         },
         warning: {
-          light: 'rgba(251, 211, 141, 0.2)',
-          DEFAULT: '#c9a961', // Muted amber
-          dark: '#a68b4f',
+          light: 'rgba(156, 163, 175, 0.2)',
+          DEFAULT: '#9ca3af', // Neutral gray
+          dark: '#6b7280',
         },
         error: {
-          light: 'rgba(254, 202, 202, 0.3)',   // Slightly more visible for critical
-          DEFAULT: '#dc5f5f', // More visible red for critical messages
-          dark: '#c44a4a',
+          light: 'rgba(75, 85, 99, 0.25)',   // Subtle but visible
+          DEFAULT: '#4b5563', // Dark neutral gray
+          dark: '#374151',
         },
         info: {
-          light: 'rgba(191, 219, 254, 0.2)',
-          DEFAULT: '#5b8db8', // Muted blue
-          dark: '#4a7396',
+          light: 'rgba(107, 114, 128, 0.15)',
+          DEFAULT: '#6b7280', // Neutral gray
+          dark: '#4b5563',
         },
       },
       fontFamily: {

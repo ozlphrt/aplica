@@ -9,9 +9,9 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        reach: 'bg-purple-500/50 text-white border border-purple-400/40 shadow-md', // Purple - ambition, prestige, aspiration
+        reach: 'bg-reach/50 text-white border border-reach/40 shadow-md', // Neutral gray - ambition, prestige, aspiration
         target: 'bg-cyan-500/50 text-white border border-cyan-400/40 shadow-md', // Teal/Cyan - balance, harmony, realistic fit
-        safety: 'bg-blue-500/50 text-white border border-blue-400/40 shadow-md', // Blue - security, confidence, certainty
+        safety: 'bg-safety/50 text-white border border-safety/40 shadow-md', // Cool slate - security, confidence, certainty
         affordable: 'bg-green-500/50 text-white border border-green-400/40 shadow-md', // Green - financial security, positive
         expensive: 'bg-red-500/60 text-white border border-red-400/50 shadow-md', // Red - warning, critical, concern
         neutral: 'bg-white/20 text-white border border-white/30 backdrop-blur-sm shadow-sm',

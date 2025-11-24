@@ -7,6 +7,7 @@ import ProfileQuestionnaire from './components/student/ProfileQuestionnaire';
 import Results from './pages/Results';
 import CollegeDetail from './pages/CollegeDetail';
 import MyList from './pages/MyList';
+import Explore from './pages/Explore';
 import useStudentProfileStore from './stores/studentProfileStore';
 import useSavedCollegesStore from './stores/savedCollegesStore';
 import { generateMatches } from './lib/matching-algorithm';
@@ -351,34 +352,44 @@ function HomePage() {
           </CardContent>
           
           <CardFooter className="justify-center">
-            {savedColleges.length > 0 ? (
-              <Button 
-                variant="primary" 
-                size="lg" 
-                className="shadow-lg"
-                onClick={() => navigate('/my-list')}
-              >
-                View My List
-              </Button>
-            ) : matches.length > 0 ? (
-              <Button 
-                variant="primary" 
-                size="lg" 
-                className="shadow-lg"
-                onClick={() => navigate('/results')}
-              >
-                View Matches
-              </Button>
-            ) : (
+            <div className="flex flex-col sm:flex-row gap-3 justify-center w-full">
               <Button 
                 variant="primary" 
                 size="lg" 
                 className="shadow-lg"
                 onClick={() => navigate('/profile')}
               >
-                Get Started
+                Take Quiz
               </Button>
-            )}
+              <Button 
+                variant="ghost" 
+                size="lg" 
+                className="shadow-lg border border-white/20"
+                onClick={() => navigate('/explore')}
+              >
+                Explore Schools
+              </Button>
+              {savedColleges.length > 0 && (
+                <Button 
+                  variant="ghost" 
+                  size="lg" 
+                  className="shadow-lg border border-white/20"
+                  onClick={() => navigate('/my-list')}
+                >
+                  View My List
+                </Button>
+              )}
+              {matches.length > 0 && savedColleges.length === 0 && (
+                <Button 
+                  variant="ghost" 
+                  size="lg" 
+                  className="shadow-lg border border-white/20"
+                  onClick={() => navigate('/results')}
+                >
+                  View Matches
+                </Button>
+              )}
+            </div>
           </CardFooter>
         </Card>
       </div>
@@ -395,6 +406,7 @@ function App() {
         <Route path="/results" element={<Results />} />
         <Route path="/college/:id" element={<CollegeDetail />} />
         <Route path="/my-list" element={<MyList />} />
+        <Route path="/explore" element={<Explore />} />
       </Routes>
     </Layout>
   );

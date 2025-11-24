@@ -8,7 +8,8 @@ import { Heart, Trash2 } from 'lucide-react';
 import useSavedCollegesStore from '../stores/savedCollegesStore';
 import useStudentProfileStore from '../stores/studentProfileStore';
 import { fetchSchoolsPaginated } from '../lib/scorecard-api';
-import { calculateFitScore } from '../lib/matching-algorithm';
+import { calculateFitScore, generateMatches } from '../lib/matching-algorithm';
+import { calculateProfileCompleteness } from '../lib/questionnaire-logic';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import CollegeCard from '../components/results/CollegeCard';
@@ -33,6 +34,27 @@ export default function MyList() {
 
       try {
         setLoading(true);
+        
+        // First, try to get tier from matches if available (for consistency)
+        // This ensures saved colleges show the same tier as in the matches list
+        let matchTierMap = new Map();
+        try {
+          const completeness = calculateProfileCompleteness(answers || {});
+          if (completeness.canGenerateMatches) {
+            const matchResult = await generateMatches(answers || {}, { limit: 50 });
+            if (matchResult && matchResult.matches && Array.isArray(matchResult.matches)) {
+              matchResult.matches.forEach(match => {
+                if (match.id) {
+                  matchTierMap.set(match.id, match.academicTier);
+                }
+              });
+            }
+          }
+        } catch (err) {
+          // If matches can't be loaded, continue without them
+          console.warn('Could not load matches for tier consistency:', err);
+        }
+        
         // Fetch each saved college by ID
         const collegePromises = savedCollegeIds.map(async (id) => {
           try {
@@ -50,15 +72,26 @@ export default function MyList() {
         const collegesWithFitScores = colleges
           .filter(Boolean)
           .map(college => {
+            // First, check if we have the tier from matches (most reliable for consistency)
+            const matchTier = matchTierMap.get(college.id);
+            
             // Determine academicTier based ONLY on admission rate (most reliable and consistent)
+            // This ensures the tier matches what's shown in the UI
             const admitRate = college['latest.admissions.admission_rate.overall'];
             let academicTier = 'target'; // default
-            if (admitRate !== null && admitRate !== undefined) {
+            
+            // Use match tier if available, otherwise use admission rate
+            if (matchTier) {
+              academicTier = matchTier;
+            } else if (admitRate !== null && admitRate !== undefined) {
               if (admitRate < 0.4) {
+                // Less than 40% = Reach (highly selective)
                 academicTier = 'reach';
               } else if (admitRate > 0.65) {
+                // More than 65% = Safety (less selective)
                 academicTier = 'safety';
               } else {
+                // Between 40% and 65% = Target
                 academicTier = 'target';
               }
             }
@@ -66,7 +99,8 @@ export default function MyList() {
             // Calculate fit score
             const result = calculateFitScore(college, answers || {});
             
-            // ALWAYS override academicTier with admission-rate-based determination
+            // ALWAYS override academicTier with our determination (from matches or admission rate)
+            // This ensures consistency regardless of student profile
             result.academicTier = academicTier;
             
             return result;

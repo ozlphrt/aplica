@@ -23,7 +23,7 @@ export default function OutcomesMetrics({ school }) {
   const getGradRateQuality = (rate) => {
     if (!rate) return null;
     if (rate >= 0.85) return { label: 'Excellent', color: 'text-green-400' };
-    if (rate >= 0.75) return { label: 'Strong', color: 'text-blue-400' };
+    if (rate >= 0.75) return { label: 'Strong', color: 'text-primary-400' };
     if (rate >= 0.65) return { label: 'Good', color: 'text-yellow-400' };
     if (rate >= 0.55) return { label: 'Moderate', color: 'text-orange-400' };
     return { label: 'Below Average', color: 'text-red-400' };
@@ -57,7 +57,7 @@ export default function OutcomesMetrics({ school }) {
             <div className="p-6 rounded-xl bg-white/5 border border-white/10">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-blue-300" />
+                  <GraduationCap className="w-5 h-5 text-primary-300" />
                   <h3 className="text-lg font-semibold text-white">Graduation Rates</h3>
                 </div>
                 {gradRateQuality && (
@@ -75,7 +75,7 @@ export default function OutcomesMetrics({ school }) {
                     </div>
                     <div className="w-full bg-white/10 rounded-full h-2">
                       <div 
-                        className="bg-blue-500 h-full rounded-full"
+                        className="bg-primary-600 h-full rounded-full"
                         style={{ width: `${gradRate4yr * 100}%` }}
                       />
                     </div>
@@ -90,7 +90,7 @@ export default function OutcomesMetrics({ school }) {
                     </div>
                     <div className="w-full bg-white/10 rounded-full h-2">
                       <div 
-                        className="bg-blue-500 h-full rounded-full"
+                        className="bg-primary-600 h-full rounded-full"
                         style={{ width: `${gradRate6yr * 100}%` }}
                       />
                     </div>
@@ -105,7 +105,7 @@ export default function OutcomesMetrics({ school }) {
           {retentionRate !== null && retentionRate !== undefined && (
             <div className="p-6 rounded-xl bg-white/5 border border-white/10">
               <div className="flex items-center gap-2 mb-4">
-                <Users className="w-5 h-5 text-purple-300" />
+                <Users className="w-5 h-5 text-primary-300" />
                 <h3 className="text-lg font-semibold text-white">Retention Rate</h3>
               </div>
               <div className="mb-2">
@@ -114,7 +114,7 @@ export default function OutcomesMetrics({ school }) {
               </div>
               <div className="w-full bg-white/10 rounded-full h-2 mt-3">
                 <div 
-                  className="bg-purple-500 h-full rounded-full"
+                  className="bg-primary-600 h-full rounded-full"
                   style={{ width: `${retentionRate * 100}%` }}
                 />
               </div>

@@ -125,10 +125,10 @@ export default function Gauge({
             cx={valuePoint.x}
             cy={valuePoint.y}
             r={8}
-            fill="rgba(59, 130, 246, 1)"
+            fill="rgba(100, 116, 139, 1)"
             stroke="rgba(255, 255, 255, 0.9)"
             strokeWidth={2}
-            className="drop-shadow-[0_0_12px_rgba(59,130,246,1)]"
+            className="drop-shadow-[0_0_12px_rgba(100,116,139,1)]"
           />
         )}
       </svg>

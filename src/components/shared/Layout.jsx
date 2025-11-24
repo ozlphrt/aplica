@@ -6,11 +6,11 @@ import Navigation from './Navigation';
 
 export default function Layout({ children }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 relative overflow-hidden">
       {/* Subtle background texture */}
-      <div className="absolute inset-0 opacity-30">
+      <div className="absolute inset-0 opacity-20">
         <div className="absolute inset-0" style={{
-          backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%)',
+          backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(107, 114, 128, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(75, 85, 99, 0.1) 0%, transparent 50%)',
         }}></div>
       </div>
       

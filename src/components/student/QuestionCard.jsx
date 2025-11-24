@@ -2,7 +2,7 @@
  * Question Card Component
  * Displays individual questions in the questionnaire
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Input, NumberInput, CurrencyInput } from '../ui/input';
 import { Select } from '../ui/select';
 import { Button } from '../ui/button';
@@ -25,6 +25,7 @@ export default function QuestionCard({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartY, setDragStartY] = useState(0);
   const [dragStartValue, setDragStartValue] = useState(0);
+  const inputRef = useRef(null);
   
   // Use defaultValue as placeholder/suggestion, but don't auto-set it
   // This ensures progress only counts when user explicitly provides an answer
@@ -116,6 +117,9 @@ export default function QuestionCard({
     const step = question.step || (question.id === 'gpa' ? 0.01 : question.id === 'sat_score' ? 10 : 1);
     
     const touchMoveHandler = (e) => {
+      if (e.cancelable) {
+        e.preventDefault();
+      }
       const deltaY = dragStartY - e.touches[0].clientY;
       const pixelsPerStep = 10;
       const steps = Math.round(deltaY / pixelsPerStep);
@@ -125,7 +129,6 @@ export default function QuestionCard({
       } else {
         handleChange(Math.round(newValue));
       }
-      e.preventDefault();
     };
     
     const mouseMoveHandler = (e) => {
@@ -145,7 +148,7 @@ export default function QuestionCard({
     };
     
     document.addEventListener('touchmove', touchMoveHandler, { passive: false });
-    document.addEventListener('touchend', endHandler);
+    document.addEventListener('touchend', endHandler, { passive: true });
     document.addEventListener('mousemove', mouseMoveHandler);
     document.addEventListener('mouseup', endHandler);
     
@@ -156,6 +159,36 @@ export default function QuestionCard({
       document.removeEventListener('mouseup', endHandler);
     };
   }, [isDragging, dragStartY, dragStartValue, question, handleChange]);
+
+  // Add touch start listener directly to DOM element (non-passive)
+  useEffect(() => {
+    if (!question) return;
+    const isDraggable = question.id === 'gpa' || question.id === 'sat_score' || question.id === 'act_score';
+    if (!isDraggable || !inputRef.current) return;
+    
+    const element = inputRef.current;
+    const min = question.validation?.min || 0;
+    const max = question.validation?.max || (question.id === 'sat_score' ? 1600 : question.id === 'act_score' ? 36 : 6.0);
+    
+    const touchStartHandler = (e) => {
+      // Get current value at the time of touch
+      const currentVal = displayValue !== null && displayValue !== undefined 
+        ? displayValue 
+        : (question.defaultValue || min);
+      setIsDragging(true);
+      setDragStartY(e.touches[0].clientY);
+      setDragStartValue(currentVal);
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+    };
+    
+    element.addEventListener('touchstart', touchStartHandler, { passive: false });
+    
+    return () => {
+      element.removeEventListener('touchstart', touchStartHandler);
+    };
+  }, [question, displayValue]);
 
   const renderInput = () => {
     switch (question.component) {
@@ -175,13 +208,6 @@ export default function QuestionCard({
             } else {
               return Math.round(val).toString();
             }
-          };
-          
-          const handleTouchStart = (e) => {
-            setIsDragging(true);
-            setDragStartY(e.touches[0].clientY);
-            setDragStartValue(currentValue);
-            e.preventDefault();
           };
           
           const handleMouseDown = (e) => {
@@ -222,7 +248,7 @@ export default function QuestionCard({
                 </button>
                 <div
                   className="flex-1 relative"
-                  onTouchStart={handleTouchStart}
+                  ref={inputRef}
                   onMouseDown={handleMouseDown}
                 >
                   <Input
@@ -471,7 +497,7 @@ export default function QuestionCard({
           {isLastQuestion && canGenerateMatches ? (
             <button
               onClick={onFinish}
-              className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-1.5 text-xs sm:text-sm"
+              className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold hover:from-primary-700 hover:to-primary-800 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-1.5 text-xs sm:text-sm"
             >
               <span className="whitespace-nowrap hidden sm:inline">See My Matches</span>
               <span className="whitespace-nowrap sm:hidden">Matches</span>
@@ -483,7 +509,7 @@ export default function QuestionCard({
             <button
               onClick={handleContinue}
               disabled={!!error}
-              className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-blue-500 disabled:hover:to-blue-600"
+              className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold hover:from-primary-700 hover:to-primary-800 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-primary-600 disabled:hover:to-primary-700"
             >
               <span>{isLastQuestion ? 'Finish' : 'Next'}</span>
               {!isLastQuestion && (

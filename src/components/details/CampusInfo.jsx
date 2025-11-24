@@ -81,8 +81,8 @@ export default function CampusInfo({ school }) {
     <Card glassmorphic={true} className="border-2 border-white/10 overflow-hidden">
       <CardContent className="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
         <div className="flex items-center gap-3 mb-8 mt-2">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/30 to-purple-600/30 flex items-center justify-center border border-purple-400/30">
-            <Globe className="w-6 h-6 text-purple-300" />
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500/30 to-primary-600/30 flex items-center justify-center border border-primary-400/30">
+            <Globe className="w-6 h-6 text-primary-300" />
           </div>
           <h2 className="text-2xl font-bold text-white">Campus Information</h2>
         </div>
@@ -92,8 +92,8 @@ export default function CampusInfo({ school }) {
           {(city || state) && (
             <div className="p-6 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center border border-blue-400/30 flex-shrink-0">
-                  <MapPin className="w-5 h-5 text-blue-300" />
+                <div className="w-10 h-10 rounded-lg bg-primary-500/20 flex items-center justify-center border border-primary-400/30 flex-shrink-0">
+                  <MapPin className="w-5 h-5 text-primary-300" />
                 </div>
                 <div className="flex-1">
                   <div className="text-xs text-white/60 uppercase tracking-wide mb-1">Location</div>
@@ -111,8 +111,8 @@ export default function CampusInfo({ school }) {
               sizeMatches ? 'bg-green-500/10 border-green-400/30' : 'bg-white/5 border-white/10'
             }`}>
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center border border-purple-400/30 flex-shrink-0">
-                  <Users className="w-5 h-5 text-purple-300" />
+                <div className="w-10 h-10 rounded-lg bg-primary-500/20 flex items-center justify-center border border-primary-400/30 flex-shrink-0">
+                  <Users className="w-5 h-5 text-primary-300" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
@@ -167,15 +167,15 @@ export default function CampusInfo({ school }) {
           
           {/* In-State Indicator */}
           {stateResidence && state === stateResidence && ownership === 1 && (
-            <div className="p-6 rounded-xl bg-blue-500/10 border border-blue-400/30 hover:bg-blue-500/15 transition-all">
+            <div className="p-6 rounded-xl bg-primary-500/10 border border-primary-400/30 hover:bg-primary-500/15 transition-all">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center border border-blue-400/30 flex-shrink-0">
-                  <Home className="w-5 h-5 text-blue-300" />
+                <div className="w-10 h-10 rounded-lg bg-primary-500/20 flex items-center justify-center border border-primary-400/30 flex-shrink-0">
+                  <Home className="w-5 h-5 text-primary-300" />
                 </div>
                 <div className="flex-1">
                   <div className="text-xs text-white/60 uppercase tracking-wide mb-1">Residency Status</div>
                   <div className="text-white font-semibold text-lg">In-State Eligible</div>
-                  <div className="text-xs text-blue-300 mt-1">You qualify for in-state tuition rates</div>
+                  <div className="text-xs text-primary-300 mt-1">You qualify for in-state tuition rates</div>
                 </div>
               </div>
             </div>
